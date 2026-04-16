@@ -14,6 +14,13 @@ vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
 })
 vim.o.updatetime = 300
 
+-- Auto-save Session.vim on exit so tmux-resurrect can restore neovim sessions
+vim.api.nvim_create_autocmd("VimLeavePre", {
+  callback = function()
+    vim.cmd("mksession! Session.vim")
+  end,
+})
+
 -- Poll for file changes even when Neovim doesn't have focus
 local checktime_timer = vim.uv.new_timer()
 checktime_timer:start(1000, 1000, vim.schedule_wrap(function()
