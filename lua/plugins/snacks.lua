@@ -7,6 +7,10 @@ return {
         right = { "fold", "git" },
       },
       picker = {
+        sources = {
+          files = { hidden = true, ignored = false },
+          explorer = { hidden = true, ignored = false },
+        },
         actions = {
           yank_absolute_path = function(_, item)
             if item then
