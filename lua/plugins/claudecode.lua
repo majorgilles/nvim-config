@@ -5,7 +5,7 @@ return {
     lazy = false,
     opts = {
       window = {
-        position = "vertical botright",
+        position = "botright",
         split_ratio = 0.30,
       },
       keymaps = {

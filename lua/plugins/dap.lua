@@ -19,6 +19,46 @@ return {
         require("dap-python").setup(venv_python)
       end
 
+      -- Rust / C / C++ adapter via codelldb
+      -- Windows: manual install at %LOCALAPPDATA%\codelldb (Mason install fails
+      -- without Git for Windows / uname on PATH).
+      -- macOS / Linux: install via :MasonInstall codelldb
+      local codelldb_path = (function()
+        if vim.fn.has("win32") == 1 then
+          return vim.fn.expand("$LOCALAPPDATA") .. "/codelldb/extension/adapter/codelldb.exe"
+        else
+          return vim.fn.stdpath("data") .. "/mason/packages/codelldb/extension/adapter/codelldb"
+        end
+      end)()
+
+      dap.adapters.codelldb = {
+        type = "server",
+        port = "${port}",
+        executable = {
+          command = codelldb_path,
+          args = { "--port", "${port}" },
+          detached = false,
+        },
+      }
+
+      dap.configurations.rust = {
+        {
+          name = "Launch (cargo build)",
+          type = "codelldb",
+          request = "launch",
+          program = function()
+            vim.fn.system({ "cargo", "build" })
+            local cwd = vim.fn.getcwd()
+            local crate = vim.fn.fnamemodify(cwd, ":t")
+            local exe = cwd .. "/target/debug/" .. crate .. ".exe"
+            return vim.fn.input("Path to executable: ", exe, "file")
+          end,
+          cwd = "${workspaceFolder}",
+          stopOnEntry = false,
+          showDisassembly = "never",
+        },
+      }
+
       -- Auto open/close UI when debugging starts/stops
       dap.listeners.after.event_initialized["dapui_config"] = function()
         dapui.open()
