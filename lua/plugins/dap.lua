@@ -41,6 +41,20 @@ return {
         },
       }
 
+      local path_sep = vim.fn.has("win32") == 1 and ";" or ":"
+      local existing_path = vim.env.PATH or vim.env.Path or os.getenv("PATH") or ""
+      local sysroot_raw = vim.fn.system({ "rustc", "--print", "sysroot" })
+      local rust_sysroot = vim.fn.trim(sysroot_raw or "")
+      local rust_launch_path = rust_sysroot
+        .. "/bin"
+        .. path_sep
+        .. vim.fn.getcwd()
+        .. "/target/debug/deps"
+        .. path_sep
+        .. existing_path
+
+      vim.env.PATH = rust_launch_path
+
       dap.configurations.rust = {
         {
           name = "Launch (cargo build)",
@@ -54,19 +68,25 @@ return {
             return vim.fn.input("Path to executable: ", exe, "file")
           end,
           cwd = "${workspaceFolder}",
+          env = { PATH = rust_launch_path },
           stopOnEntry = false,
           showDisassembly = "never",
         },
       }
 
-      -- Auto open/close UI when debugging starts/stops
-      dap.listeners.after.event_initialized["dapui_config"] = function()
+      -- Auto open/close UI when debugging starts/stops.
+      -- Use the session-lifecycle hooks (not message events) so this fires
+      -- regardless of how the session was launched (plain dap, rustaceanvim, etc.)
+      dap.listeners.after.event_stopped["dapui_open"] = function()
         dapui.open()
       end
-      dap.listeners.before.event_terminated["dapui_config"] = function()
+      dap.listeners.after.event_initialized["dapui_open"] = function()
+        dapui.open()
+      end
+      dap.listeners.before.event_terminated["dapui_close"] = function()
         dapui.close()
       end
-      dap.listeners.before.event_exited["dapui_config"] = function()
+      dap.listeners.before.event_exited["dapui_close"] = function()
         dapui.close()
       end
 

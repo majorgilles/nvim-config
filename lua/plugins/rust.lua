@@ -15,6 +15,7 @@ return {
 
       vim.g.rustaceanvim = {
         dap = {
+          autoload_configurations = false,
           adapter = {
             type = "server",
             port = "${port}",
