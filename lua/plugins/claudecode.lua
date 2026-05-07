@@ -21,4 +21,13 @@ return {
       },
     },
   },
+  {
+    "folke/which-key.nvim",
+    opts = {
+      spec = {
+        { "<leader>a", group = "AI / Claude", icon = "🤖" },
+        { "<leader>t", group = "Test", icon = "🧪" },
+      },
+    },
+  },
 }
